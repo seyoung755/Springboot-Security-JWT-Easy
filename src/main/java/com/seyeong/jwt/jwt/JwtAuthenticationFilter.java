@@ -1,5 +1,7 @@
 package com.seyeong.jwt.jwt;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seyeong.jwt.auth.PrincipalDetails;
 import com.seyeong.jwt.model.User;
@@ -16,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Date;
 
 // 스프링 시큐리티의 UsernamePasswordAuthenticationFilter는 /login 요청을 했을 때 동작한다.
 // 1.username, password 받아서
@@ -80,7 +83,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         System.out.println("successfulAuthentication 실행됨 : 인증이 완료되었다는 뜻임");
-        super.successfulAuthentication(request, response, chain, authResult);
+        PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
 
+        // RSA는 아니고 Hash암호 방식
+        String jwtToken = JWT.create()
+                .withSubject("cos토큰")
+                .withExpiresAt(new Date(System.currentTimeMillis() + (60000*10)))
+                .withClaim("id", principalDetails.getUser().getId())
+                .withClaim("username", principalDetails.getUser().getUsername())
+                .sign(Algorithm.HMAC512("cos"));
+
+        response.addHeader("Authorization" , "Bearer "+jwtToken);
+        
     }
 }

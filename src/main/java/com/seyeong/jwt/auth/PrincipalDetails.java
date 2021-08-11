@@ -21,16 +21,19 @@ public class PrincipalDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        user.getRoleList().forEach(new Consumer<String>() {
-            @Override
-            public void accept(String s) {
-                authorities.add(new GrantedAuthority() {
-                    @Override
-                    public String getAuthority() {
-                        return s;
-                    }
-                });
-            }
+//        user.getRoleList().forEach(new Consumer<String>() {
+//            @Override
+//            public void accept(String s) {
+//                authorities.add(new GrantedAuthority() {
+//                    @Override
+//                    public String getAuthority() {
+//                        return s;
+//                    }
+//                });
+//            }
+//        });
+        user.getRoleList().forEach(s -> {
+            authorities.add(()->s);
         });
         return authorities;
     }

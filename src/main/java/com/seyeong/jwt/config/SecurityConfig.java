@@ -2,6 +2,8 @@ package com.seyeong.jwt.config;
 
 import com.seyeong.jwt.filter.MyFilter1;
 import com.seyeong.jwt.jwt.JwtAuthenticationFilter;
+import com.seyeong.jwt.jwt.JwtAuthorizationFilter;
+import com.seyeong.jwt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +22,7 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final CorsFilter corsFilter;
+    private final UserRepository userRepository;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -29,7 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.addFilterBefore(new MyFilter1(), SecurityContextPersistenceFilter.class);
+//        http.addFilterBefore(new MyFilter1(), SecurityContextPersistenceFilter.class);
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // STATELESS 서버
                 .and()
@@ -37,6 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin().disable()
                 .httpBasic().disable()
                 .addFilter(new JwtAuthenticationFilter(authenticationManager())) // Authenticationamanager 를 받아야 함.
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), userRepository))
                 .authorizeRequests()
                 .antMatchers("/api/v1/user/**")
                 .access("hasRole('ROLE_USER') or hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
